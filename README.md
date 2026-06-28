@@ -2,8 +2,6 @@
 
 > Enter any company name. Get a structured **Invest / Pass / Hold** verdict backed by live web research and a multi-node AI agent.
 
-![Verdict Demo](./docs/demo.png)
-
 ---
 
 ## Overview
@@ -15,9 +13,9 @@ Verdict is a production-ready AI investment research agent built with:
 | Frontend | Next.js 15 (App Router) + React + Tailwind CSS |
 | Backend | Next.js API Routes (Node.js) |
 | AI Orchestration | LangChain.js + **LangGraph.js** |
-| LLM | Anthropic Claude (claude-sonnet-4-5) — swappable |
+| LLM | **Groq** (llama / mixtral — free tier) |
 | Web Research | Tavily Search API (live web + news) |
-| Deployment | Vercel |
+| Deployment | **Render** (Docker) |
 
 A user types a company name → the LangGraph agent runs 5 sequential nodes → the frontend streams live progress → a structured verdict is displayed with an investment scorecard, pros/cons, risks, and expandable research sections with citations.
 
@@ -27,22 +25,23 @@ A user types a company name → the LangGraph agent runs 5 sequential nodes → 
 
 ### Prerequisites
 
-- Node.js 18+
-- Anthropic API key ([console.anthropic.com](https://console.anthropic.com))
-- Tavily API key ([app.tavily.com](https://app.tavily.com)) — free tier: 1,000 searches/month
+- Node.js 20+
+- Groq API key — free at [console.groq.com](https://console.groq.com)
+- Tavily API key — free tier: 1,000 searches/month at [app.tavily.com](https://app.tavily.com)
 
 ### Setup
 
 ```bash
-# 1. Clone / unzip the project
-cd verdict
+# 1. Clone the repo
+git clone https://github.com/sumitkumarbarnwal/Verdict-AI-Investment-Research-Agent.git
+cd Verdict-AI-Investment-Research-Agent
 
 # 2. Install dependencies
 npm install --legacy-peer-deps
 
 # 3. Set up environment variables
 cp .env.example .env.local
-# Edit .env.local and fill in your API keys
+# Edit .env.local and add your API keys
 
 # 4. Run locally
 npm run dev
@@ -53,23 +52,25 @@ npm run dev
 
 | Variable | Required | Description |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | ✅ | Anthropic Claude API key |
+| `GROQ_API_KEY` | ✅ | Groq API key (free at console.groq.com) |
 | `TAVILY_API_KEY` | ✅ | Tavily web search API key |
-| `LLM_PROVIDER` | ❌ | `anthropic` (default) or `openai` |
-| `LLM_MODEL` | ❌ | Override model name (e.g. `claude-opus-4-5`) |
+| `LLM_PROVIDER` | ❌ | `groq` (default) |
+| `LLM_MODEL` | ❌ | Override model name |
 | `RATE_LIMIT_RPM` | ❌ | Requests per IP per minute (default: 5) |
 
-### Deploy to Vercel
+### Deploy to Render
 
-```bash
-# Install Vercel CLI
-npm i -g vercel
+1. Push your repo to GitHub
+2. Go to [render.com](https://render.com) → **New → Web Service**
+3. Connect your GitHub repo
+4. Set **Runtime = Docker** (Render auto-detects the `Dockerfile`)
+5. Add environment variables in the Render dashboard:
+   - `GROQ_API_KEY`
+   - `TAVILY_API_KEY`
+   - `NODE_ENV=production`
+6. Click **Create Web Service** — build takes ~3–5 min
 
-# Deploy (set env vars in Vercel dashboard or via CLI)
-vercel deploy --prod
-```
-
-Set `ANTHROPIC_API_KEY` and `TAVILY_API_KEY` in your Vercel project environment variables. No other changes needed.
+> **Note:** Free tier sleeps after 15 min of inactivity. First request after sleep takes ~30s to wake up.
 
 ---
 
@@ -97,7 +98,7 @@ User Input
 │      │                                                       │
 │      ▼                                                       │
 │   ┌──────────┐                                               │
-│   │  Intake  │  Canonicalise company name via LLM            │
+│   │  Intake  │  Canonicalise company name via Groq LLM       │
 │   └────┬─────┘                                               │
 │        │                                                     │
 │        ▼                                                     │
@@ -109,13 +110,13 @@ User Input
 │        │                                                     │
 │        ▼                                                     │
 │   ┌──────────┐                                               │
-│   │Synthesis │  LLM aggregates raw search results            │
+│   │Synthesis │  Groq aggregates raw search results           │
 │   │          │  into structured per-section summaries        │
 │   └────┬─────┘                                               │
 │        │                                                     │
 │        ▼                                                     │
 │   ┌──────────┐                                               │
-│   │ Decision │  LLM applies investment framework:            │
+│   │ Decision │  Groq applies investment framework:           │
 │   │          │  marketSize, moat, team, financialHealth,     │
 │   │          │  momentum, riskLevel → INVEST/PASS/HOLD       │
 │   └────┬─────┘                                               │
@@ -170,7 +171,7 @@ src/
         ├── nodes.js           # 5 node implementations
         ├── tools.js           # Tavily LangChain tools
         ├── state.js           # AgentStateAnnotation (LangGraph)
-        ├── llm.js             # LLM factory (Anthropic/OpenAI)
+        ├── llm.js             # LLM factory (Groq via OpenAI-compatible API)
         └── config.js          # Central configuration
 ```
 
@@ -204,7 +205,7 @@ The Decision node scores each company across 6 dimensions (1–10):
 {
   "verdict": "INVEST",
   "confidence": 82,
-  "summary": "Zerodha is India's largest retail stockbroker with a dominant market position, bootstrapped profitability since inception, and a proven tech-first model. The company has consistently generated strong profits with zero external funding, demonstrating exceptional capital efficiency. Key risks include regulatory changes and growing competition from well-funded rivals like Groww.",
+  "summary": "Zerodha is India's largest retail stockbroker with a dominant market position, bootstrapped profitability since inception, and a proven tech-first model.",
   "scorecard": {
     "marketSize": 8,
     "moat": 8,
@@ -222,7 +223,7 @@ The Decision node scores each company across 6 dimensions (1–10):
 {
   "verdict": "PASS",
   "confidence": 88,
-  "summary": "Byju's faces severe structural challenges: mounting debt, regulatory investigations, auditor resignations, and significant revenue restatements have severely damaged credibility. The edtech market has contracted post-COVID and the company's aggressive acquisition strategy has left it overleveraged with no clear path to profitability.",
+  "summary": "Byju's faces severe structural challenges: mounting debt, regulatory investigations, auditor resignations, and significant revenue restatements.",
   "scorecard": {
     "marketSize": 7,
     "moat": 3,
@@ -240,7 +241,7 @@ The Decision node scores each company across 6 dimensions (1–10):
 {
   "verdict": "HOLD",
   "confidence": 65,
-  "summary": "Stripe is a world-class fintech infrastructure company with unparalleled developer adoption, strong revenue growth, and an expanding product suite. However, as a private company, valuation uncertainty and the path to IPO/liquidity make a definitive verdict difficult. Worth monitoring for an IPO or secondary market opportunity.",
+  "summary": "Stripe is a world-class fintech infrastructure company with unparalleled developer adoption. As a private company, valuation uncertainty makes a definitive verdict difficult.",
   "scorecard": {
     "marketSize": 9,
     "moat": 9,
@@ -258,28 +259,24 @@ The Decision node scores each company across 6 dimensions (1–10):
 
 | Decision | Rationale |
 |---|---|
-| **LangGraph over a single chain** | Multi-node graph enables clear separation of concerns, better observability via step streaming, and easier future expansion (e.g. add a "follow-up questions" node) |
+| **Groq over paid LLMs** | Free tier with fast inference — ideal for a demo. Llama 3 on Groq delivers quality results at zero cost |
+| **LangGraph over a single chain** | Multi-node graph enables clear separation of concerns, better observability via step streaming, and easier future expansion |
 | **Parallel research searches** | All 6 Tavily searches run concurrently (`Promise.all`) to minimise latency — research phase takes ~5s instead of ~30s sequential |
-| **NDJSON streaming** | Lets the UI show live progress without waiting for the full agent to complete. Much better UX than a blank spinner for a 30–60s operation |
-| **In-memory rate limiter** | Sufficient for a demo/MVP; acknowledged limitation on Vercel serverless (process-local). Production upgrade: Upstash Redis |
-| **Tailwind v3 (not v4)** | Broader ecosystem compatibility, stable PostCSS plugin, and the custom config system is more ergonomic for a custom design system |
-| **JS not TypeScript** | Per assignment specification; JSDoc comments are used extensively to preserve type documentation |
-| **Claude Sonnet** | Best balance of quality/speed/cost for this use case. Opus would give better analysis but at 5x cost and 2x latency |
+| **NDJSON streaming** | Lets the UI show live progress without waiting for the full agent to complete. Much better UX than a blank spinner |
+| **Docker on Render** | No cold-start timeout limits unlike serverless. The LangGraph agent can run as long as needed |
+| **Tailwind v3 (not v4)** | Broader ecosystem compatibility and stable PostCSS plugin |
 
 ---
 
 ## What I'd Improve With More Time
 
-1. **Persistent rate limiting** — Replace in-memory store with Upstash Redis for true per-IP limits across Vercel serverless instances
-2. **Result caching** — Cache results in KV for 1 hour so repeated lookups for the same company are instant
-3. **PDF export** — Add `@react-pdf/renderer` for a polished, styled PDF download
-4. **Historical comparison** — Store past verdicts to show how a company's score changes over time
-5. **Financial data APIs** — Integrate Alpha Vantage or Polygon.io for real P/E ratios, revenue charts, and market cap figures
-6. **Parallel LLM calls** — Run synthesis summaries per section in parallel rather than one big batch
+1. **Persistent rate limiting** — Replace in-memory store with Upstash Redis
+2. **Result caching** — Cache results in KV for 1 hour so repeated lookups are instant
+3. **PDF export** — Add `@react-pdf/renderer` for a styled PDF download
+4. **Historical comparison** — Store past verdicts to show score changes over time
+5. **Financial data APIs** — Integrate Alpha Vantage for real P/E ratios and revenue charts
+6. **Parallel LLM calls** — Run synthesis summaries per section in parallel
 7. **User accounts** — Let users save and revisit past research reports
-8. **Confidence calibration** — Fine-tune the decision prompt with a validation set of known good/bad investments
-9. **Mobile app** — The streaming architecture would translate well to React Native
-10. **Webhook/API mode** — Let enterprise users hit the API directly without the UI
 
 ---
 
@@ -289,4 +286,4 @@ Research reports are AI-generated and grounded in live web data. **This is not f
 
 ---
 
-*Built with ❤️ using Next.js, LangGraph, Claude, and Tavily*
+*Built with ❤️ using Next.js, LangGraph, Groq, and Tavily*
