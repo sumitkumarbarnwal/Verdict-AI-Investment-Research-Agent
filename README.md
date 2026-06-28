@@ -23,56 +23,189 @@ A user types a company name → the LangGraph agent runs 5 sequential nodes → 
 
 ## How to Run It
 
-### Prerequisites
+---
 
-- Node.js 20+
-- Groq API key — free at [console.groq.com](https://console.groq.com)
-- Tavily API key — free tier: 1,000 searches/month at [app.tavily.com](https://app.tavily.com)
+### ✅ Prerequisites
 
-### Setup
+Before starting, make sure you have the following installed and ready:
 
-```bash
-# 1. Clone the repo
-git clone https://github.com/sumitkumarbarnwal/Verdict-AI-Investment-Research-Agent.git
-cd Verdict-AI-Investment-Research-Agent
-
-# 2. Install dependencies
-npm install --legacy-peer-deps
-
-# 3. Set up environment variables
-cp .env.example .env.local
-# Edit .env.local and add your API keys
-
-# 4. Run locally
-npm run dev
-# Open http://localhost:3000
-```
-
-### Environment Variables
-
-| Variable | Required | Description |
+| Requirement | Version | Where to get it |
 |---|---|---|
-| `GROQ_API_KEY` | ✅ | Groq API key (free at console.groq.com) |
-| `TAVILY_API_KEY` | ✅ | Tavily web search API key |
-| `LLM_PROVIDER` | ❌ | `groq` (default) |
-| `LLM_MODEL` | ❌ | Override model name |
-| `RATE_LIMIT_RPM` | ❌ | Requests per IP per minute (default: 5) |
+| Node.js | 20 or higher | [nodejs.org](https://nodejs.org) |
+| npm | comes with Node.js | — |
+| Groq API Key | free | [console.groq.com](https://console.groq.com) → Sign up → API Keys → Create |
+| Tavily API Key | free | [app.tavily.com](https://app.tavily.com) → Sign in → API Keys |
 
-### Deploy to Render
-
-1. Push your repo to GitHub
-2. Go to [render.com](https://render.com) → **New → Web Service**
-3. Connect your GitHub repo
-4. Set **Runtime = Docker** (Render auto-detects the `Dockerfile`)
-5. Add environment variables in the Render dashboard:
-   - `GROQ_API_KEY`
-   - `TAVILY_API_KEY`
-   - `NODE_ENV=production`
-6. Click **Create Web Service** — build takes ~3–5 min
-
-> **Note:** Free tier sleeps after 15 min of inactivity. First request after sleep takes ~30s to wake up.
+> **Note:** Both Groq and Tavily offer generous free tiers — no credit card required.
 
 ---
+
+### 📦 Method 1 — Download ZIP
+
+Use this method if you received the project as a `.zip` file.
+
+**Step 1 — Extract the ZIP**
+
+Extract the downloaded file `Verdict-AI-Investment-Research-Agent.zip` to any folder on your computer.
+
+**Step 2 — Open a terminal in that folder**
+
+- **Windows:** Right-click inside the extracted folder → "Open in Terminal" (or open PowerShell/CMD and `cd` into the folder)
+- **Mac/Linux:** Open Terminal and `cd` into the extracted folder
+
+```bash
+cd Verdict-AI-Investment-Research-Agent
+```
+
+**Step 3 — Install dependencies**
+
+```bash
+npm install --legacy-peer-deps
+```
+
+> This installs all required packages. The `--legacy-peer-deps` flag is needed due to LangChain package version constraints. This is normal.
+
+**Step 4 — Create your environment file**
+
+```bash
+# Windows (PowerShell)
+Copy-Item .env.example .env.local
+
+# Mac / Linux
+cp .env.example .env.local
+```
+
+Now open `.env.local` in any text editor (Notepad, VS Code, etc.) and fill in your keys:
+
+```env
+LLM_PROVIDER=groq
+GROQ_API_KEY=gsk_your_actual_key_here
+TAVILY_API_KEY=tvly-your_actual_key_here
+```
+
+**Step 5 — Start the development server**
+
+```bash
+npm run dev
+```
+
+**Step 6 — Open the app**
+
+Open your browser and go to:
+```
+http://localhost:3000
+```
+
+---
+
+### 🔗 Method 2 — Git Clone
+
+Use this method if you have Git installed and want to clone directly from GitHub.
+
+**Step 1 — Clone the repository**
+
+```bash
+git clone https://github.com/sumitkumarbarnwal/Verdict-AI-Investment-Research-Agent.git
+```
+
+**Step 2 — Navigate into the project folder**
+
+```bash
+cd Verdict-AI-Investment-Research-Agent
+```
+
+**Step 3 — Install dependencies**
+
+```bash
+npm install --legacy-peer-deps
+```
+
+**Step 4 — Create your environment file**
+
+```bash
+# Mac / Linux
+cp .env.example .env.local
+
+# Windows (PowerShell)
+Copy-Item .env.example .env.local
+```
+
+Open `.env.local` and add your API keys:
+
+```env
+LLM_PROVIDER=groq
+GROQ_API_KEY=gsk_your_actual_key_here
+TAVILY_API_KEY=tvly-your_actual_key_here
+```
+
+**Step 5 — Start the development server**
+
+```bash
+npm run dev
+```
+
+**Step 6 — Open the app**
+
+```
+http://localhost:3000
+```
+
+---
+
+### 🔑 Environment Variables Reference
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `GROQ_API_KEY` | ✅ Yes | — | Groq API key. Get free at [console.groq.com](https://console.groq.com) |
+| `TAVILY_API_KEY` | ✅ Yes | — | Tavily web search key. Get free at [app.tavily.com](https://app.tavily.com) |
+| `LLM_PROVIDER` | ❌ No | `groq` | LLM provider to use (`groq` is the default) |
+| `LLM_MODEL` | ❌ No | `llama-3.3-70b-versatile` | Override the default model name |
+| `RATE_LIMIT_RPM` | ❌ No | `5` | Max research requests per IP per minute |
+
+---
+
+### 🐳 Method 3 — Docker (for deployment / Render)
+
+If you want to run the app in a Docker container locally or deploy to Render:
+
+**Step 1 — Build the Docker image**
+
+```bash
+docker build -t verdict .
+```
+
+**Step 2 — Run the container**
+
+```bash
+docker run -p 3000:3000 \
+  -e GROQ_API_KEY=your_groq_key \
+  -e TAVILY_API_KEY=your_tavily_key \
+  -e NODE_ENV=production \
+  verdict
+```
+
+**Step 3 — Open the app**
+
+```
+http://localhost:3000
+```
+
+---
+
+### ☁️ Deploy to Render (Cloud)
+
+1. Push the repo to GitHub
+2. Go to [render.com](https://render.com) → **New → Web Service**
+3. Connect the GitHub repo
+4. Set **Runtime = Docker**
+5. Add environment variables: `GROQ_API_KEY`, `TAVILY_API_KEY`, `NODE_ENV=production`
+6. Click **Create Web Service** — Render builds and deploys automatically
+
+---
+
+---
+
+
 
 ## How It Works
 
