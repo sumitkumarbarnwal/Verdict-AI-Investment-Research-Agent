@@ -13,7 +13,6 @@
  */
 
 const config = require("./config");
-const { ChatAnthropic } = require("@langchain/anthropic");
 
 // ── Groq via openai-compatible SDK ───────────────────────────────────────────
 
