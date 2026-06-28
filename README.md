@@ -2,7 +2,10 @@
 
 > Enter any company name. Get a structured **Invest / Pass / Hold** verdict backed by live web research and a multi-node AI agent.
 
----
+🌐 **Live Demo:** [https://verdict-ai-investment-research-agent.onrender.com](https://verdict-ai-investment-research-agent.onrender.com)
+📁 **GitHub:** [https://github.com/sumitkumarbarnwal/Verdict-AI-Investment-Research-Agent](https://github.com/sumitkumarbarnwal/Verdict-AI-Investment-Research-Agent)
+
+
 
 ## Overview
 
