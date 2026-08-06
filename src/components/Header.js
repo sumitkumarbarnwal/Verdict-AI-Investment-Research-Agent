@@ -57,7 +57,7 @@ export default function Header() {
             v1.0
           </span>
           <a
-            href="https://github.com"
+            href="https://github.com/sumitkumarbarnwal"
             target="_blank"
             rel="noopener noreferrer"
             className="p-1.5 rounded-md transition-colors"
