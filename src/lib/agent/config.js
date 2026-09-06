@@ -13,7 +13,7 @@ const LLM_PROVIDER = process.env.LLM_PROVIDER || "groq";
 
 /** Default model per provider */
 const MODEL_MAP = {
-  groq:      process.env.LLM_MODEL || "llama-3.3-70b-versatile",
+  groq:      process.env.LLM_MODEL || "qwen/qwen3.8-27b",
   anthropic: process.env.LLM_MODEL || "claude-sonnet-4-5",
   openai:    process.env.LLM_MODEL || "gpt-4o",
 };
